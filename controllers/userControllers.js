@@ -1,7 +1,7 @@
 const User = require("../models/user")
 const crypto = require("crypto")
 const bcryptjs = require("bcryptjs")
-
+const jwt = require("jsonwebtoken")
 const userController  = {
     userSignUp: async (req,res)=>{
         try{
@@ -9,12 +9,12 @@ const userController  = {
             let user = await User.findOne({email})
             if(!user){ // no existe el user? crealo
                 let logged = false;
-                let verified = false;
-                let code = crypto.randomBytes(15).toString("hex")
+                // let verified = false;
+                // let code = crypto.randomBytes(15).toString("hex")
                 let role = "user"
                 if(from === "form"){ // se crea por formulario
                     password = bcryptjs.hashSync(password,10)
-                    user = await new User({name,role,photo,lastName,email,password:[password],from:[from],logged,verified,code}).save()
+                    user = await new User({name,role,photo,lastName,email,password:[password],from:[from],logged}).save()
                     // sendmail(mail,code)
                     res.status(200).json({
                         message:"usuario creado por form",
@@ -22,8 +22,8 @@ const userController  = {
                     })
                 }else{
                     password = bcryptjs.hashSync(password,10)
-                    verified = true
-                    user = await new User({name,role,photo,lastName,email,password:[password],from:[from],logged,verified,code}).save()
+                    // verified = true
+                    user = await new User({name,role,photo,lastName,email,password:[password],from:[from],logged}).save()
                     res.status(200).json({
                         message:"usuario creado con " + from,
                         success: true
@@ -37,7 +37,7 @@ const userController  = {
                     })
                 }else{
                     user.from.push(from)
-                    user.verified = true
+                    // user.verified = true
                     user.password.push(bcryptjs.hashSync(password,10))
                     await user.save()
                     res.status(200).sjon({
@@ -63,7 +63,7 @@ const userController  = {
                     message: "no existe el usuario, registrese",
                     success: false
                 })
-            }else if(user.verified){
+            }else if(user){
                 const checkPass = user.password.filter(passwordElement => bcryptjs.compareSync(password,passwordElement))
                 if(from === "form"){
                     if(checkPass.length >0){
@@ -77,7 +77,8 @@ const userController  = {
                         }
                         user.logged = true
                         await user.save()
-                        // const token
+                        //  token
+                        // const token = jwt.sign({id:user._id}, process.env.JWT_KEY,{expiresIn:60*60*24})
                         res.status(200).json({
                             success: true,
                             response: {user: loginUser},
@@ -102,6 +103,7 @@ const userController  = {
                         user.logged =true
                         await user.save()
                         // token
+                        // const token = jwt.sign({id:user._id}, process.env.JWT_KEY,{expiresIn:60*60*24})
                         res.status(200).json({
                             success: true,
                             response:{user:loginUser},
@@ -115,9 +117,14 @@ const userController  = {
                     }
                 }
             }else{ // usuario existe pero no esta verificado
-                res.status(401).json({
+                user.logged = true
+                await user.save()
+                console.log(user)
+                res.status(200).json({
                     success: false,
-                    message: "Verifique su cuenta por favor"
+                    // message: "Verifique su cuenta por favor"
+                    message: "encontrado",
+                    response: {id :user._id}
                 })
             }
         }catch(error){
@@ -129,9 +136,9 @@ const userController  = {
         }
     },
     userSignOut: async(req,res)=>{
-        const {id}=req.params
+        const {email}=req.params
         try{
-            const user = await User.findOne({_id:id})
+            const user = await User.findOne({email})
             if(user.logged){
                 user.logged = false
                 await user.save()
@@ -172,6 +179,51 @@ const userController  = {
             })
         }
     },
+    verifyMail: async(req,res)=>{
+        const {code} = req.params
+        try{
+            let user = await User.findOne({code})
+            if(user){
+                user.verified = true
+                await user.save()
+                res.status(200).redirect(301,"http://localhost:3000")
+            }else{
+                res.status(400).json({
+                    message: "Esto email no tiene cuenta",
+                    success:true
+                })
+            }
+        }catch(error){
+            console.log(error)
+            res.status(400).json({
+                message: error.message,
+                success:false
+            })
+        }
+    },
+    verifyToken: async(req,res)=>{
+        if(!req.user !== null){
+            // const token = jwt.sign({id: req.user.id},process.env.JWT_KEY,{expiresIn: 60*60*24})
+            res.status(200).json({
+                success:true,
+                response:{
+                    user:{
+                        id: req.user.userID,
+                        name: req.user.name,
+                        email: req.user.email,
+                        role:req.user.role,
+                        photo:req.user.photo
+                    }
+                },
+                message: "Bienvenido " + req.user.name
+            })
+        }else{
+            res.status(400).json({
+                message: "Sign in por favor!",
+                success: true
+            })
+        }
+    },
     getAll: async(req,res)=>{
         let users
         let query = {}
@@ -189,6 +241,38 @@ const userController  = {
                 success: false
             })
         }
-    }
+    },
+    userSignUpGreener: async (req,res)=>{
+        try{
+            let {name,email,password,direccion,localidad,telefono}=req.body
+            let user = await User.findOne({email})
+            if(!user){ // no existe el user? crealo
+                let logged = false;
+                // let verified = false;
+                // let code = crypto.randomBytes(15).toString("hex")
+                    password = bcryptjs.hashSync(password,10)
+                    user = await new User({name,email,password:[password],logged,direccion,localidad,telefono}).save()
+                    // sendmail(mail,code)
+                    res.status(200).json({
+                        message:"usuario creado por form",
+                        success: true
+                    })
+                
+            }else{
+                
+                    res.status(400).json({
+                        message: "usuario ya existe",
+                        success: false
+                    })
+                
+            }
+        }catch(error){
+            console.log(error)
+            res.status(400).json({
+                message: error.message,
+                success: false
+            })
+        }
+    },
 }
 module.exports = userController
