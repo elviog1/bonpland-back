@@ -10,6 +10,8 @@ const playerSchema = new mongoose.Schema({
     photo: {type:String, required:true},
     description: {type:String, required:true},
     captain: {type:Boolean, required:true},
+    position: {type:String, required:true},
+    sex: {type:String, required:true},
     
 })
 

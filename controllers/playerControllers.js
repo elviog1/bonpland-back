@@ -2,9 +2,9 @@ const Player = require("../models/player")
 
 const playerController ={ 
     createPlayer: async (req,res) =>{
-        let {name,lastname,date,height,country,city,photo,description,captain} = req.body
+        let {name,lastname,date,height,country,city,photo,description,captain,position,sex} = req.body
         try{
-            let player = await new Player({name,lastname,date,height,country,city,photo,description,captain}).save()
+            let player = await new Player({name,lastname,date,height,country,city,photo,description,captain,position,sex}).save()
             if(player){
                 res.status(201).json({
                     message: "Player created",
