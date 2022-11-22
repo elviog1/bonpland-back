@@ -1,3 +1,4 @@
+
 const Player = require("../models/player")
 
 const playerController ={ 
@@ -79,6 +80,29 @@ const playerController ={
 
         }catch(error){
             console.log(error)
+            res.status(404).json({
+                message: error.message,
+                success: false
+            })
+        }
+    },
+    updatePlayer: async(req,res)=>{
+        let {id} = req.params
+        let updatePlayer = req.body
+        try{
+            let update = await Player.findOneAndUpdate({_id:id}, updatePlayer)
+            if(update){
+                res.status(200).json({
+                    message: "player update successfully",
+                    success: true
+                })
+            }else{
+                res.status(404).json({
+                    message: "player not found",
+                    success: false
+                })
+            }
+        }catch(error){
             res.status(404).json({
                 message: error.message,
                 success: false
