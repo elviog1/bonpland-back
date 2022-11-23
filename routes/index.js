@@ -11,9 +11,10 @@ router.get('/', function(req, res, next) {
   res.json({title: "holi"})
 });
 
-// router.use("/auth", userRouter) 
+router.use("/auth", userRouter) 
 router.use("/players", playerRouter) 
 router.use("/teams", teamRouter) 
 router.use("/photos", photoRouter) 
+
 
 module.exports = router;
