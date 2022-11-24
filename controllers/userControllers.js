@@ -1,7 +1,7 @@
 const User = require("../models/user")
 const crypto = require("crypto")
 const bcryptjs = require("bcryptjs")
-const jwt = require("jsonwebtoken")
+// const jwt = require("jsonwebtoken")
 const userController  = {
     userSignUp: async (req,res)=>{
         try{
@@ -238,38 +238,6 @@ const userController  = {
                 success: false
             })
         }
-    },
-    userSignUpGreener: async (req,res)=>{
-        try{
-            let {name,email,password,direccion,localidad,telefono}=req.body
-            let user = await User.findOne({email})
-            if(!user){ // no existe el user? crealo
-                let logged = false;
-                // let verified = false;
-                // let code = crypto.randomBytes(15).toString("hex")
-                    password = bcryptjs.hashSync(password,10)
-                    user = await new User({name,email,password:[password],logged,direccion,localidad,telefono}).save()
-                    // sendmail(mail,code)
-                    res.status(200).json({
-                        message:"usuario creado por form",
-                        success: true
-                    })
-                
-            }else{
-                
-                    res.status(400).json({
-                        message: "usuario ya existe",
-                        success: false
-                    })
-                
-            }
-        }catch(error){
-            console.log(error)
-            res.status(400).json({
-                message: error.message,
-                success: false
-            })
-        }
-    },
+    }
 }
 module.exports = userController
