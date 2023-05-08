@@ -5,6 +5,6 @@ const {createNotice,getAllNotice,deleteNotice} = require('../controllers/noticeC
 
 router.get('/',getAllNotice)
 router.post('/',createNotice)
-router.delete('/:id',createNotice)
+router.delete('/:id',deleteNotice)
 
 module.exports = router
