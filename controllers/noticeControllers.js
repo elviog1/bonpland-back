@@ -37,6 +37,29 @@ const noticeControllers = {
                 success:false
             })
         }
+    },
+    deleteNotice: async(req,res) =>{
+        let {id} = req.params
+        try {
+            let notice = await Notice.findOneAndDelete({_id:id})
+            if(notice){
+                res.status(200).json({
+                    message: "Notice deleted",
+                    success:true,
+                })
+            }else{
+                res.status(404).json({
+                    message: 'not found notice',
+                    success:false
+                })
+            }
+        } catch (error) {
+            console.log(error)
+            res.status(400).json({
+                message:error.message,
+                success:false
+            })
+        }
     }
 }
 
